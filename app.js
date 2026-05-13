@@ -188,7 +188,6 @@ async function adminLogin() {
   renderFaqs();
   updateAdminUI();
   $("admin-pw").value = "";
-  $("admin-modal").hidden = true;
 }
 
 function logout() {
