@@ -276,12 +276,29 @@ body {
   align-items: center;
   justify-content: center;
   box-shadow: 0 4px 14px rgba(90, 126, 164, 0.2);
-  opacity: 0.5;
-  transition: opacity .2s;
+  opacity: 0.6;
+  transition: all .2s;
   z-index: 10;
 }
-.admin-toggle:hover { opacity: 1; }
+.admin-toggle:hover { opacity: 1; transform: scale(1.05); }
 .admin-toggle svg { width: 18px; height: 18px; }
+.admin-toggle.active {
+  background: linear-gradient(135deg, var(--accent), var(--accent-dark));
+  color: #fff;
+  border-color: transparent;
+  opacity: 1;
+  width: auto;
+  padding: 0 18px 0 16px;
+  border-radius: 24px;
+  height: 46px;
+  gap: 6px;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 500;
+}
+.admin-toggle.active::after {
+  content: "FAQを管理";
+}
 
 .modal {
   position: fixed;

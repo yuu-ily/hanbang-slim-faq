@@ -186,7 +186,9 @@ async function adminLogin() {
   renderCategorySelect();
   renderCatList();
   renderFaqs();
+  updateAdminUI();
   $("admin-pw").value = "";
+  $("admin-modal").hidden = true;
 }
 
 function logout() {
@@ -197,6 +199,18 @@ function logout() {
   $("admin-login").hidden = false;
   $("admin-panel").hidden = true;
   renderFaqs();
+  updateAdminUI();
+}
+
+function updateAdminUI() {
+  const toggle = $("admin-toggle");
+  if (state.isAdmin) {
+    toggle.classList.add("active");
+    toggle.title = "管理メニューを開く";
+  } else {
+    toggle.classList.remove("active");
+    toggle.title = "管理者ログイン";
+  }
 }
 
 async function saveData(commitMessage) {
@@ -274,12 +288,14 @@ async function addCategory() {
 document.addEventListener("DOMContentLoaded", async () => {
   await loadFaqs();
 
-  // Restore session if present
+  // Restore session if present (only when ?admin in URL)
   const saved = sessionStorage.getItem(SESSION_KEY);
-  if (saved) {
+  if (saved && location.search.includes("admin")) {
     state.password = saved;
     state.isAdmin = true;
+    renderFaqs();
   }
+  updateAdminUI();
 
   $("search").addEventListener("input", (e) => {
     state.search = e.target.value;
@@ -310,6 +326,5 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   if (location.search.includes("admin")) {
     $("admin-toggle").hidden = false;
-    $("admin-toggle").click();
   }
 });
