@@ -54,6 +54,7 @@
 
     <div id="admin-panel" hidden>
       <h2>FAQ管理</h2>
+      <p id="form-mode" class="form-mode" hidden>FAQを編集中</p>
       <form id="faq-form" class="faq-form">
         <label>カテゴリ
           <select id="f-category" required></select>
@@ -66,6 +67,7 @@
         </label>
         <div class="row">
           <button type="submit" class="btn btn-primary" id="save-btn">追加して保存</button>
+          <button type="button" class="btn" id="cancel-edit-btn" hidden>編集キャンセル</button>
           <button type="button" class="btn" data-close>閉じる</button>
           <button type="button" class="btn" id="logout-btn">ログアウト</button>
         </div>

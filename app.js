@@ -18,6 +18,7 @@ const state = {
   search: "",
   isAdmin: false,
   password: "",
+  editingId: null,
 };
 
 const $ = (id) => document.getElementById(id);
@@ -102,7 +103,7 @@ function renderFaqs() {
           <svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
         </div>
         <div class="faq-a">${esc(f.answer)}</div>
-        ${state.isAdmin ? `<div class="faq-actions"><button data-delete="${esc(f.id)}">削除</button></div>` : ""}
+        ${state.isAdmin ? `<div class="faq-actions"><button data-edit="${esc(f.id)}">編集</button><button data-delete="${esc(f.id)}">削除</button></div>` : ""}
       </div>`
     )
     .join("");
@@ -119,6 +120,14 @@ function renderFaqs() {
           e.stopPropagation();
           if (!confirm("このFAQを削除しますか？")) return;
           await deleteFaq(b.dataset.delete);
+        })
+      );
+    $("faq-list")
+      .querySelectorAll("[data-edit]")
+      .forEach((b) =>
+        b.addEventListener("click", (e) => {
+          e.stopPropagation();
+          startEdit(b.dataset.edit);
         })
       );
   }
@@ -244,26 +253,67 @@ async function saveData(commitMessage) {
   return true;
 }
 
+function startEdit(id) {
+  const f = state.faqs.find((x) => x.id === id);
+  if (!f) return;
+  state.editingId = id;
+  $("admin-modal").hidden = false;
+  $("admin-login").hidden = true;
+  $("admin-panel").hidden = false;
+  renderCategorySelect();
+  $("f-category").value = f.category;
+  $("f-question").value = f.question;
+  $("f-answer").value = f.answer;
+  $("save-btn").textContent = "更新して保存";
+  $("form-mode").textContent = "FAQを編集中";
+  $("form-mode").hidden = false;
+  $("cancel-edit-btn").hidden = false;
+  $("f-question").focus();
+}
+
+function cancelEdit() {
+  state.editingId = null;
+  $("faq-form").reset();
+  renderCategorySelect();
+  $("save-btn").textContent = "追加して保存";
+  $("form-mode").hidden = true;
+  $("cancel-edit-btn").hidden = true;
+  $("save-status").hidden = true;
+}
+
 async function addFaq(e) {
   e.preventDefault();
-  const item = {
-    id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
-    category: $("f-category").value,
-    question: $("f-question").value.trim(),
-    answer: $("f-answer").value.trim(),
-    createdAt: new Date().toISOString(),
-  };
-  if (!item.question || !item.answer) return;
-  state.faqs.unshift(item);
+  const question = $("f-question").value.trim();
+  const answer = $("f-answer").value.trim();
+  const category = $("f-category").value;
+  if (!question || !answer) return;
+
   $("save-btn").disabled = true;
-  const ok = await saveData("FAQ追加: " + item.question.slice(0, 40));
-  $("save-btn").disabled = false;
-  if (ok) {
-    $("f-question").value = "";
-    $("f-answer").value = "";
+  let ok = false;
+  if (state.editingId) {
+    const idx = state.faqs.findIndex((x) => x.id === state.editingId);
+    if (idx === -1) { $("save-btn").disabled = false; return; }
+    const before = state.faqs[idx];
+    state.faqs[idx] = { ...before, category, question, answer, updatedAt: new Date().toISOString() };
+    ok = await saveData("FAQ編集: " + question.slice(0, 40));
+    if (!ok) state.faqs[idx] = before;
+    else cancelEdit();
   } else {
-    state.faqs.shift();
+    const item = {
+      id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
+      category, question, answer,
+      createdAt: new Date().toISOString(),
+    };
+    state.faqs.unshift(item);
+    ok = await saveData("FAQ追加: " + question.slice(0, 40));
+    if (ok) {
+      $("f-question").value = "";
+      $("f-answer").value = "";
+    } else {
+      state.faqs.shift();
+    }
   }
+  $("save-btn").disabled = false;
 }
 
 async function deleteFaq(id) {
@@ -321,6 +371,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   $("admin-pw").addEventListener("keydown", (e) => { if (e.key === "Enter") adminLogin(); });
   $("logout-btn").addEventListener("click", logout);
   $("faq-form").addEventListener("submit", addFaq);
+  $("cancel-edit-btn").addEventListener("click", cancelEdit);
   $("add-cat-btn").addEventListener("click", addCategory);
 
   if (location.search.includes("admin")) {

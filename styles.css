@@ -253,7 +253,22 @@ body {
   cursor: pointer;
   font-family: inherit;
 }
+.faq-actions { display: flex; gap: 6px; }
+.faq-actions button + button { margin-left: 0; }
 .faq-actions button:hover { color: var(--accent-dark); border-color: var(--accent); }
+.faq-actions button[data-edit]:hover { color: var(--accent-dark); }
+.faq-actions button[data-delete]:hover { color: #c75a5a; border-color: #e0bcbc; }
+
+.form-mode {
+  display: inline-block;
+  background: linear-gradient(135deg, var(--accent), var(--accent-dark));
+  color: #fff;
+  font-size: 12px;
+  padding: 4px 12px;
+  border-radius: 999px;
+  margin: 4px 0 0;
+  letter-spacing: 0.1em;
+}
 
 .empty {
   text-align: center;
