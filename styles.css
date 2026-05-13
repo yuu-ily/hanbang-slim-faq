@@ -205,10 +205,12 @@ body {
 }
 .faq-q .q-text {
   flex: 1;
+  font-family: "Noto Serif JP", serif;
   font-weight: 500;
-  font-size: 15px;
+  font-size: 15.5px;
   color: var(--ink);
   line-height: 1.7;
+  letter-spacing: 0.04em;
 }
 .faq-q .q-cat {
   display: inline-block;
