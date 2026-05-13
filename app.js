@@ -267,7 +267,6 @@ function startEdit(id) {
   $("save-btn").textContent = "更新して保存";
   $("form-mode").textContent = "FAQを編集中";
   $("form-mode").hidden = false;
-  $("cancel-edit-btn").hidden = false;
   $("f-question").focus();
 }
 
@@ -277,7 +276,6 @@ function cancelEdit() {
   renderCategorySelect();
   $("save-btn").textContent = "追加して保存";
   $("form-mode").hidden = true;
-  $("cancel-edit-btn").hidden = true;
   $("save-status").hidden = true;
 }
 
@@ -361,17 +359,17 @@ document.addEventListener("DOMContentLoaded", async () => {
       renderFaqs();
     }
   });
-  document.querySelectorAll("[data-close]").forEach((b) =>
-    b.addEventListener("click", () => ($("admin-modal").hidden = true))
-  );
+  const closeModal = () => {
+    $("admin-modal").hidden = true;
+    if (state.editingId) cancelEdit();
+  };
+  document.querySelectorAll("[data-close]").forEach((b) => b.addEventListener("click", closeModal));
   $("admin-modal").addEventListener("click", (e) => {
-    if (e.target.id === "admin-modal") $("admin-modal").hidden = true;
+    if (e.target.id === "admin-modal") closeModal();
   });
   $("admin-login-btn").addEventListener("click", adminLogin);
   $("admin-pw").addEventListener("keydown", (e) => { if (e.key === "Enter") adminLogin(); });
-  $("logout-btn").addEventListener("click", logout);
   $("faq-form").addEventListener("submit", addFaq);
-  $("cancel-edit-btn").addEventListener("click", cancelEdit);
   $("add-cat-btn").addEventListener("click", addCategory);
 
   if (location.search.includes("admin")) {
