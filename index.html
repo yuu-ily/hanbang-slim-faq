@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>韓国漢方 Hanbang Slim｜よくあるご質問</title>
+<meta name="description" content="韓国漢方 Hanbang Slim のよくあるご質問。商品・効果・飲み方・副作用・配送についての疑問にお答えします。" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=Noto+Serif+JP:wght@600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+<header class="hero">
+  <div class="hero-inner">
+    <p class="hero-eyebrow">韓国漢方</p>
+    <h1 class="hero-title">Hanbang Slim</h1>
+    <p class="hero-sub">よくあるご質問 / FAQ</p>
+  </div>
+</header>
+
+<main class="container">
+  <section class="controls">
+    <div class="search-wrap">
+      <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+      <input id="search" type="search" placeholder="気になるキーワードで検索（例：飲み方、副作用）" autocomplete="off" />
+    </div>
+    <div id="categories" class="categories"></div>
+  </section>
+
+  <section id="faq-list" class="faq-list"></section>
+
+  <p id="empty" class="empty" hidden>該当するFAQが見つかりませんでした。</p>
+</main>
+
+<button id="admin-toggle" class="admin-toggle" title="管理者ログイン" aria-label="管理者ログイン">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+</button>
+
+<div id="admin-modal" class="modal" hidden>
+  <div class="modal-card">
+    <button class="modal-close" data-close aria-label="閉じる">×</button>
+    <div id="admin-login">
+      <h2>管理者ログイン</h2>
+      <p class="muted">FAQの追加・削除には管理者パスワードが必要です。</p>
+      <label>パスワード
+        <input id="admin-pw" type="password" autocomplete="current-password" />
+      </label>
+      <label>GitHubアクセストークン（初回のみ）
+        <input id="admin-token" type="password" placeholder="ghp_xxxx（ブラウザに保存されます）" />
+        <small class="muted">未入力の場合は前回のものを使用します</small>
+      </label>
+      <button id="admin-login-btn" class="btn btn-primary">ログイン</button>
+      <p id="admin-error" class="error" hidden></p>
+    </div>
+
+    <div id="admin-panel" hidden>
+      <h2>FAQ管理</h2>
+      <form id="faq-form" class="faq-form">
+        <label>カテゴリ
+          <select id="f-category" required></select>
+        </label>
+        <label>質問
+          <input id="f-question" type="text" required maxlength="200" />
+        </label>
+        <label>回答
+          <textarea id="f-answer" rows="5" required maxlength="2000"></textarea>
+        </label>
+        <div class="row">
+          <button type="submit" class="btn btn-primary" id="save-btn">追加して保存</button>
+          <button type="button" class="btn" id="logout-btn">ログアウト</button>
+        </div>
+        <p id="save-status" class="muted" hidden></p>
+      </form>
+
+      <details class="cat-manage">
+        <summary>カテゴリを管理</summary>
+        <div class="row">
+          <input id="new-cat" type="text" placeholder="新しいカテゴリ名" />
+          <button type="button" class="btn" id="add-cat-btn">追加</button>
+        </div>
+        <ul id="cat-list" class="cat-list"></ul>
+      </details>
+    </div>
+  </div>
+</div>
+
+<footer class="footer">
+  <p>© Hanbang Slim Japan</p>
+</footer>
+
+<script src="./config.js"></script>
+<script src="./app.js"></script>
+</body>
+</html>
