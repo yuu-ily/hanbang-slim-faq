@@ -1,17 +1,14 @@
 // ============================================================
-// Hanbang Slim FAQ — Static SPA
-// Public: read faqs.json. Admin: commits to GitHub via API.
+// Hanbang Slim FAQ — Static SPA (Vercel-hosted)
+// Public: read faqs.json from GitHub raw (always latest).
+// Admin: POST password + data to /api/save (serverless).
 // ============================================================
 
-// CONFIG — populated at deploy time by build step / sed.
 const CONFIG = {
-  // GitHub repo info — set automatically when the site is pushed.
-  owner: window.__HBS_OWNER__ || "OWNER_PLACEHOLDER",
-  repo: window.__HBS_REPO__ || "REPO_PLACEHOLDER",
+  owner: "yuu-ily",
+  repo: "hanbang-slim-faq",
   branch: "main",
   dataPath: "data/faqs.json",
-  // Hashed admin password (SHA-256 hex). Set at deploy time.
-  passwordHash: window.__HBS_PW_HASH__ || "PW_HASH_PLACEHOLDER",
 };
 
 const state = {
@@ -19,40 +16,29 @@ const state = {
   categories: [],
   filter: "all",
   search: "",
-  sha: null,
   isAdmin: false,
+  password: "",
 };
 
-// -------- utils --------
 const $ = (id) => document.getElementById(id);
 const esc = (s) =>
   String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 
-async function sha256(text) {
-  const buf = new TextEncoder().encode(text);
-  const hash = await crypto.subtle.digest("SHA-256", buf);
-  return [...new Uint8Array(hash)].map((b) => b.toString(16).padStart(2, "0")).join("");
-}
-
-// -------- data loading --------
+// -------- data loading (public, no auth) --------
 async function loadFaqs() {
-  // Try GitHub API first (gets SHA for writes + latest content)
-  if (CONFIG.owner !== "OWNER_PLACEHOLDER") {
-    try {
-      const res = await fetch(
-        `https://api.github.com/repos/${CONFIG.owner}/${CONFIG.repo}/contents/${CONFIG.dataPath}?ref=${CONFIG.branch}`,
-        { headers: { Accept: "application/vnd.github.v3+json" }, cache: "no-store" }
-      );
-      if (res.ok) {
-        const data = await res.json();
-        state.sha = data.sha;
-        const content = JSON.parse(decodeURIComponent(escape(atob(data.content.replace(/\n/g, "")))));
-        applyData(content);
-        return;
-      }
-    } catch (e) { /* fallback below */ }
-  }
-  // Fallback: bundled JSON
+  const url = `https://api.github.com/repos/${CONFIG.owner}/${CONFIG.repo}/contents/${CONFIG.dataPath}?ref=${CONFIG.branch}`;
+  try {
+    const res = await fetch(url, {
+      headers: { Accept: "application/vnd.github.v3+json" },
+      cache: "no-store",
+    });
+    if (res.ok) {
+      const data = await res.json();
+      const content = JSON.parse(decodeURIComponent(escape(atob(data.content.replace(/\n/g, "")))));
+      applyData(content);
+      return;
+    }
+  } catch (e) { /* fallback */ }
   const res = await fetch("./data/faqs.json", { cache: "no-store" });
   applyData(await res.json());
 }
@@ -94,7 +80,11 @@ function renderFaqs() {
   const q = state.search.trim().toLowerCase();
   const filtered = state.faqs.filter((f) => {
     if (state.filter !== "all" && f.category !== state.filter) return false;
-    if (q && !(f.question.toLowerCase().includes(q) || f.answer.toLowerCase().includes(q) || (f.category || "").toLowerCase().includes(q))) return false;
+    if (q && !(
+      f.question.toLowerCase().includes(q) ||
+      f.answer.toLowerCase().includes(q) ||
+      (f.category || "").toLowerCase().includes(q)
+    )) return false;
     return true;
   });
 
@@ -142,10 +132,7 @@ function renderCategorySelect() {
 
 function renderCatList() {
   $("cat-list").innerHTML = state.categories
-    .map(
-      (c) =>
-        `<li><span>${esc(c)}</span><button data-delcat="${esc(c)}">削除</button></li>`
-    )
+    .map((c) => `<li><span>${esc(c)}</span><button data-delcat="${esc(c)}">削除</button></li>`)
     .join("");
   $("cat-list")
     .querySelectorAll("[data-delcat]")
@@ -163,31 +150,36 @@ function renderCatList() {
     );
 }
 
-// -------- admin auth & GitHub writes --------
-const TOKEN_KEY = "hbs_token";
+// -------- admin (server-side via /api/save) --------
 const SESSION_KEY = "hbs_session";
-
-function getToken() { return localStorage.getItem(TOKEN_KEY) || ""; }
-function setToken(t) { if (t) localStorage.setItem(TOKEN_KEY, t); }
 
 async function adminLogin() {
   $("admin-error").hidden = true;
   const pw = $("admin-pw").value;
-  const tok = $("admin-token").value.trim();
-  if (tok) setToken(tok);
+  if (!pw) return;
 
-  const hash = await sha256(pw);
-  if (hash !== CONFIG.passwordHash) {
+  // Verify by attempting a no-op save (revalidates against the server).
+  // We do this by sending current state — server checks password only.
+  const res = await fetch("/api/save", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ password: pw, verifyOnly: true }),
+  });
+
+  if (res.status === 401) {
     $("admin-error").textContent = "パスワードが違います";
     $("admin-error").hidden = false;
     return;
   }
-  if (!getToken()) {
-    $("admin-error").textContent = "初回はGitHubアクセストークンを入力してください";
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    $("admin-error").textContent = "ログインに失敗しました: " + (err.error || res.status);
     $("admin-error").hidden = false;
     return;
   }
-  sessionStorage.setItem(SESSION_KEY, "1");
+
+  state.password = pw;
+  sessionStorage.setItem(SESSION_KEY, pw);
   state.isAdmin = true;
   $("admin-login").hidden = true;
   $("admin-panel").hidden = false;
@@ -195,11 +187,11 @@ async function adminLogin() {
   renderCatList();
   renderFaqs();
   $("admin-pw").value = "";
-  $("admin-token").value = "";
 }
 
 function logout() {
   sessionStorage.removeItem(SESSION_KEY);
+  state.password = "";
   state.isAdmin = false;
   $("admin-modal").hidden = true;
   $("admin-login").hidden = false;
@@ -208,43 +200,31 @@ function logout() {
 }
 
 async function saveData(commitMessage) {
-  const token = getToken();
-  if (!token) { alert("GitHubトークンがありません。再ログインしてください。"); return; }
-  const body = {
-    categories: state.categories,
-    faqs: state.faqs,
-  };
-  const contentB64 = btoa(unescape(encodeURIComponent(JSON.stringify(body, null, 2) + "\n")));
-
+  if (!state.password) {
+    alert("ログインが切れています。再ログインしてください。");
+    logout();
+    return false;
+  }
   $("save-status").hidden = false;
   $("save-status").textContent = "保存中...";
 
-  const res = await fetch(
-    `https://api.github.com/repos/${CONFIG.owner}/${CONFIG.repo}/contents/${CONFIG.dataPath}`,
-    {
-      method: "PUT",
-      headers: {
-        Authorization: `token ${token}`,
-        Accept: "application/vnd.github.v3+json",
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        message: commitMessage,
-        content: contentB64,
-        sha: state.sha,
-        branch: CONFIG.branch,
-      }),
-    }
-  );
+  const res = await fetch("/api/save", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      password: state.password,
+      faqs: state.faqs,
+      categories: state.categories,
+      message: commitMessage,
+    }),
+  });
 
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
-    $("save-status").textContent = "保存に失敗しました: " + (err.message || res.status);
+    $("save-status").textContent = "保存に失敗: " + (err.error || res.status);
     return false;
   }
-  const out = await res.json();
-  state.sha = out.content.sha;
-  $("save-status").textContent = "保存しました（数十秒で反映）";
+  $("save-status").textContent = "保存しました（数秒で反映）";
   renderCategories();
   renderFaqs();
   renderCatList();
@@ -294,6 +274,13 @@ async function addCategory() {
 document.addEventListener("DOMContentLoaded", async () => {
   await loadFaqs();
 
+  // Restore session if present
+  const saved = sessionStorage.getItem(SESSION_KEY);
+  if (saved) {
+    state.password = saved;
+    state.isAdmin = true;
+  }
+
   $("search").addEventListener("input", (e) => {
     state.search = e.target.value;
     renderFaqs();
@@ -301,8 +288,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   $("admin-toggle").addEventListener("click", () => {
     $("admin-modal").hidden = false;
-    if (sessionStorage.getItem(SESSION_KEY)) {
-      state.isAdmin = true;
+    if (state.isAdmin) {
       $("admin-login").hidden = true;
       $("admin-panel").hidden = false;
       renderCategorySelect();
@@ -317,10 +303,10 @@ document.addEventListener("DOMContentLoaded", async () => {
     if (e.target.id === "admin-modal") $("admin-modal").hidden = true;
   });
   $("admin-login-btn").addEventListener("click", adminLogin);
+  $("admin-pw").addEventListener("keydown", (e) => { if (e.key === "Enter") adminLogin(); });
   $("logout-btn").addEventListener("click", logout);
   $("faq-form").addEventListener("submit", addFaq);
   $("add-cat-btn").addEventListener("click", addCategory);
 
-  // Secret URL trigger: append ?admin to open modal directly
   if (location.search.includes("admin")) $("admin-toggle").click();
 });
