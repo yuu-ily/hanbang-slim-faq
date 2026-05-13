@@ -308,5 +308,8 @@ document.addEventListener("DOMContentLoaded", async () => {
   $("faq-form").addEventListener("submit", addFaq);
   $("add-cat-btn").addEventListener("click", addCategory);
 
-  if (location.search.includes("admin")) $("admin-toggle").click();
+  if (location.search.includes("admin")) {
+    $("admin-toggle").hidden = false;
+    $("admin-toggle").click();
+  }
 });
