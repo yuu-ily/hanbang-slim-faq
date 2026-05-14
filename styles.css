@@ -213,13 +213,14 @@ body {
   letter-spacing: 0.04em;
 }
 .faq-q .q-cat {
-  display: inline-block;
+  display: block;
   font-size: 11px;
   color: var(--accent-dark);
-  margin-bottom: 6px;
+  margin-bottom: 8px;
   letter-spacing: 0.15em;
   font-weight: 500;
 }
+.faq-q .q-body { display: block; }
 .faq-q .arrow {
   flex: 0 0 18px;
   width: 18px; height: 18px;

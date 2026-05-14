@@ -98,7 +98,7 @@ function renderFaqs() {
           <span class="q-mark">Q</span>
           <div class="q-text">
             <div class="q-cat">${esc(f.category || "")}</div>
-            ${esc(f.question)}
+            <div class="q-body">${esc(f.question)}</div>
           </div>
           <svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
         </div>
