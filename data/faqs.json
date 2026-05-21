@@ -9,6 +9,13 @@
   ],
   "faqs": [
     {
+      "id": "mpg2t41aof6p",
+      "category": "成分・効果",
+      "question": "テスト",
+      "answer": "テスト",
+      "createdAt": "2026-05-21T22:42:24.814Z"
+    },
+    {
       "id": "new001",
       "category": "成分・効果",
       "question": "どのような成分が含まれていますか？",
