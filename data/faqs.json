@@ -9,6 +9,13 @@
   ],
   "faqs": [
     {
+      "id": "mswmgzh7njxb",
+      "category": "他の薬・漢方との併用",
+      "question": "プロテインとの服用はできますか？",
+      "answer": "プロテインとは服用可能です。",
+      "createdAt": "2026-08-17T02:36:17.180Z"
+    },
+    {
       "id": "msls059luyap",
       "category": "成分・効果",
       "question": "1包あたりの主成分は？",
