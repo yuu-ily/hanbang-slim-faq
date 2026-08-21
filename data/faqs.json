@@ -9,6 +9,13 @@
   ],
   "faqs": [
     {
+      "id": "mt2mbpotzhe1",
+      "category": "他の薬・漢方との併用",
+      "question": "ピルとの併用は可能ですか？",
+      "answer": "基本的にピルとの併用は可能です。",
+      "createdAt": "2026-08-21T07:18:48.269Z"
+    },
+    {
       "id": "mswmgzh7njxb",
       "category": "他の薬・漢方との併用",
       "question": "プロテインとの服用はできますか？",
