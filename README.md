@@ -15,7 +15,7 @@ LINEで配布するためのFAQ閲覧用Webアプリです。
 
    | Key | Value |
    |---|---|
-   | `ADMIN_PASSWORD` | `hanbangslim2026` |
+   | `ADMIN_PASSWORD` | （Vercelの環境変数にのみ設定。ここには書かない） |
    | `GITHUB_TOKEN` | `ghp_xxxx...`（fine-grained PAT、`contents:write` 権限） |
    | `GITHUB_OWNER` | `yuu-ily` |
    | `GITHUB_REPO` | `hanbang-slim-faq` |
@@ -30,6 +30,9 @@ LINEで配布するためのFAQ閲覧用Webアプリです。
 4. 生成された `ghp_...` をVercelの `GITHUB_TOKEN` に貼り付け
 
 ## 管理画面の使い方
+
+> ⚠️ 2026-10-14 以降、このサイトからのFAQ編集は停止しています。編集は Hanbang Slim 管理ツールの「よくある質問」タブで行います（閲覧ページはそのまま）。
+
 - 公開URL末尾に `?admin` を付けるか、画面右下のシールドアイコンをクリック
 - パスワードを入力するだけでFAQ追加・削除が可能
 - 変更は自動でGitHubにコミット＆即時サイトに反映

@@ -6,7 +6,15 @@
 //   GITHUB_REPO     — e.g. hanbang-slim-faq
 //   GITHUB_BRANCH   — optional, defaults to main
 
+// 🔒 2026-10-14: FAQの編集は Hanbang Slim 管理ツールの「❓ よくある質問」タブへ移行するため、ここからの保存は停止
+//    （このリポジトリは公開されており、以前のREADMEに管理パスワードが記載されていたため）
+const SAVE_DISABLED = true;
+
 export default async function handler(req, res) {
+  if (SAVE_DISABLED) {
+    res.status(410).json({ error: "このサイトからのFAQ編集は終了しました。Hanbang Slim 管理ツールの「よくある質問」タブから編集してください。" });
+    return;
+  }
   if (req.method !== "POST") {
     res.status(405).json({ error: "Method not allowed" });
     return;
