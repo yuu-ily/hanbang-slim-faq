@@ -26,7 +26,17 @@ const esc = (s) =>
   String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 
 // -------- data loading (public, no auth) --------
+// 2026-10-14: FAQの大もとは Hanbang Slim 管理ツール（「❓ よくある質問」タブ）。まずそこから読み、
+//             読めない・0件のときだけ従来の GitHub（予備・更新停止）を使う
+const MASTER_FAQ_API = "https://hanbang-admin.vercel.app/api/public/faq";
 async function loadFaqs() {
+  try {
+    const r = await fetch(MASTER_FAQ_API, { cache: "no-cache", credentials: "omit" });
+    if (r.ok) {
+      const d = await r.json();
+      if (d && Array.isArray(d.faqs) && d.faqs.length) { applyData(d); return; }
+    }
+  } catch (e) { /* GitHubの予備へ */ }
   const url = `https://api.github.com/repos/${CONFIG.owner}/${CONFIG.repo}/contents/${CONFIG.dataPath}?ref=${CONFIG.branch}`;
   try {
     const res = await fetch(url, {
@@ -372,7 +382,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   $("faq-form").addEventListener("submit", addFaq);
   $("add-cat-btn").addEventListener("click", addCategory);
 
-  if (location.search.includes("admin")) {
+  if (false && location.search.includes("admin")) {   // 編集は管理ツールへ移行したため、管理ボタンは出さない
     $("admin-toggle").hidden = false;
   }
 });
